@@ -1,0 +1,6 @@
+{
+  "name": "Soda",
+  "description": "A highly interactive 3D landing page for Diet Soda featuring real-time mouse tilting, parallax particles, rising bubbles, and dynamic flavor switching.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
