@@ -41,6 +41,8 @@
 
       html {
           scroll-behavior: smooth;
+          overflow-x: hidden;
+          width: 100%;
       }
 
       body {
@@ -812,6 +814,7 @@
           .main-title, .side-title { font-size: 3.5rem; text-align: center; }
           .hero-left { padding: 2rem 0; align-items: center; text-align: center; margin-bottom: 2rem; }
           .hero-right { align-items: center; text-align: center; width: 100%; padding: 2rem 0; }
+          .product-carousel { align-items: center; }
           .side-title { align-self: center; text-align: center; }
           .description { max-width: 100%; }
           .hero { height: auto; min-height: 100vh; padding-bottom: 4rem; }
@@ -874,6 +877,77 @@
           }
       }
 
+      /* Detailed Mobile Responsiveness Enhancements */
+      @media (max-width: 768px) {
+          /* Header adjustments with floating bottom navbar */
+          .header {
+              padding: 1rem 5%;
+              background: rgba(10, 10, 10, 0.4);
+              backdrop-filter: blur(10px);
+              -webkit-backdrop-filter: blur(10px);
+              border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          }
+          .logo {
+              font-size: 1.2rem;
+          }
+          .contact-btn {
+              padding: 0.6rem 1.2rem;
+              font-size: 0.8rem;
+          }
+          .nav {
+              position: fixed;
+              bottom: 1.5rem;
+              left: 50%;
+              transform: translateX(-50%);
+              z-index: 1000;
+              background: rgba(10, 10, 10, 0.85);
+              backdrop-filter: blur(20px);
+              -webkit-backdrop-filter: blur(20px);
+              border: 1px solid rgba(255, 255, 255, 0.15);
+              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+              width: 90%;
+              max-width: 380px;
+              justify-content: space-around;
+              padding: 0.35rem;
+          }
+          .nav-item {
+              padding: 0.4rem 0.8rem;
+              font-size: 0.75rem;
+          }
+          .award-badge {
+              justify-content: center;
+              margin-top: 1.5rem;
+          }
+
+          /* Intro Section Spacing */
+          .intro-left-space {
+              height: 280px !important;
+              min-height: 280px !important;
+          }
+
+          /* Scale down floaty berries to prevent UI clutter on mobile */
+          .berry {
+              width: 60px !important;
+              height: 60px !important;
+          }
+          .b1 { width: 100px !important; height: 100px !important; }
+          .b3 { width: 110px !important; height: 110px !important; }
+          .b6 { width: 90px !important; height: 90px !important; }
+
+          /* Centering text and elements in the footer for premium symmetry */
+          .footer-col {
+              align-items: center !important;
+              text-align: center !important;
+          }
+          .footer-desc {
+              max-width: 100% !important;
+          }
+          .newsletter-form {
+              justify-content: center !important;
+              width: 100%;
+          }
+      }
+
       @media (max-width: 640px) {
           .products-grid {
               grid-template-columns: 1fr;
@@ -901,6 +975,45 @@
           .product-card.active .static-can-img {
               opacity: 0;
               transform: translateX(-50%) scale(0.8) translateY(20px);
+          }
+
+          /* Adjust headings on mobile to prevent clipping/overlapping of long words */
+          .main-title, .side-title {
+              font-size: 2.8rem;
+          }
+      }
+
+      @media (max-width: 480px) {
+          .main-title, .side-title {
+              font-size: 2.4rem;
+          }
+          .feature-card {
+              padding: 1rem;
+              gap: 1rem;
+          }
+          .feature-number {
+              font-size: 1.5rem;
+          }
+          .intro-title {
+              font-size: 2.2rem;
+          }
+          .newsletter-form {
+              flex-direction: column;
+              border-radius: 20px;
+              gap: 0.6rem;
+          }
+          .newsletter-input {
+              width: 100%;
+              text-align: center;
+          }
+          .newsletter-btn {
+              width: 100%;
+          }
+      }
+
+      @media (max-width: 380px) {
+          .main-title, .side-title {
+              font-size: 2.1rem;
           }
       }
 
@@ -1524,6 +1637,44 @@
           }
       });
 
+      // Helper function to safely apply texture to model-viewer materials using direct Three.js or model-viewer API fallback
+      function safeSetTexture(mvTexture) {
+          if (!modelViewer || !modelViewer.model || !mvTexture) return;
+          try {
+              const threeMaterialSym = Symbol.for('threeMaterial');
+              const threeTextureSym = Symbol.for('threeTexture');
+              const rawTexture = mvTexture[threeTextureSym];
+              
+              if (rawTexture) {
+                  let updated = false;
+                  modelViewer.model.materials.forEach(material => {
+                      const threeMaterial = material[threeMaterialSym];
+                      if (threeMaterial) {
+                          threeMaterial.map = rawTexture;
+                          threeMaterial.needsUpdate = true;
+                          updated = true;
+                      }
+                  });
+                  if (updated) {
+                      return; // Successfully updated via direct Three.js
+                  }
+              }
+          } catch (e) {
+              console.warn("Direct Three.js texture assignment failed, attempting fallback...", e);
+          }
+          
+          // Fallback to official model-viewer API if direct Three.js failed or symbols aren't present
+          try {
+              modelViewer.model.materials.forEach(material => {
+                  if (material.pbrMetallicRoughness && material.pbrMetallicRoughness.baseColorTexture) {
+                      material.pbrMetallicRoughness.baseColorTexture.setTexture(mvTexture);
+                  }
+              });
+          } catch (e) {
+              console.error("Standard model-viewer setTexture failed:", e);
+          }
+      }
+
       // Preload textures & Warm up shaders
       modelViewer.addEventListener('load', async () => {
           try {
@@ -1532,14 +1683,9 @@
 
               // Shader Warm-up: Briefly apply textures to compile shaders
               if (modelViewer.model) {
-                  const material = modelViewer.model.materials[0];
-                  if (material && material.pbrMetallicRoughness.baseColorTexture) {
-                      // Apply blue
-                      material.pbrMetallicRoughness.baseColorTexture.setTexture(blueTexture);
-                      await new Promise(r => requestAnimationFrame(r));
-                      // Apply green back
-                      material.pbrMetallicRoughness.baseColorTexture.setTexture(greenTexture);
-                  }
+                  safeSetTexture(blueTexture);
+                  await new Promise(r => requestAnimationFrame(r));
+                  safeSetTexture(greenTexture);
               }
           } catch (e) { console.error("Texture preload failed", e); }
       });
@@ -1700,19 +1846,9 @@
 
                   const isBlueBase = (flavor === 'blue' || flavor === 'citrus');
                   if (isBlueBase) {
-                      if (modelViewer.model && blueTexture) {
-                          const material = modelViewer.model.materials[0];
-                          if (material && material.pbrMetallicRoughness.baseColorTexture) {
-                              material.pbrMetallicRoughness.baseColorTexture.setTexture(blueTexture);
-                          }
-                      }
+                      safeSetTexture(blueTexture);
                   } else {
-                      if (modelViewer.model && greenTexture) {
-                          const material = modelViewer.model.materials[0];
-                          if (material && material.pbrMetallicRoughness.baseColorTexture) {
-                              material.pbrMetallicRoughness.baseColorTexture.setTexture(greenTexture);
-                          }
-                      }
+                      safeSetTexture(greenTexture);
                   }
 
                   gsap.to(spinObj, {
@@ -1841,9 +1977,17 @@
               const introCenterX = rect.left + rect.width / 2;
               const introCenterY = rect.top + rect.height / 2;
               
-              // Viewport coordinates of hero center
-              const heroCenterX = window.innerWidth / 2;
-              const heroCenterY = window.innerHeight / 2;
+              // Viewport coordinates of hero center (targets .hero-center spacer dynamically on mobile)
+              const heroCenterSpace = document.querySelector('.hero-center');
+              let heroCenterX = window.innerWidth / 2;
+              let heroCenterY = window.innerHeight / 2;
+              if (heroCenterSpace) {
+                  const hRect = heroCenterSpace.getBoundingClientRect();
+                  heroCenterX = hRect.left + hRect.width / 2;
+                  heroCenterY = hRect.top + hRect.height / 2;
+              }
+              
+              const mobileScaleBase = window.innerWidth < 480 ? 0.58 : 0.75;
               
               if (scrollState.progress3 > 0 && footerSpace && activeProductCard) {
                   // Scroll is moving from Products Section to Footer
@@ -1859,9 +2003,9 @@
                   targetX = cardCenterX + (footerCenterX - cardCenterX) * scrollState.progress3;
                   targetY = cardCenterY + (footerCenterY - cardCenterY) * scrollState.progress3;
 
-                  // Scale transitions from active card scale (0.45 or 0.35) to footer scale (0.55 or 0.45)
-                  const startScale = isDesktop ? 0.45 : 0.35;
-                  const endScale = isDesktop ? 0.55 : 0.45;
+                  // Scale transitions from active card scale to footer scale
+                  const startScale = isDesktop ? 0.45 : (window.innerWidth < 480 ? 0.3 : 0.35);
+                  const endScale = isDesktop ? 0.55 : (window.innerWidth < 480 ? 0.42 : 0.45);
                   targetScale = startScale + (endScale - startScale) * scrollState.progress3;
 
                   // Rotation transitions from 15 degrees upright tilt down to 8 degrees slight tilt in footer
@@ -1884,8 +2028,9 @@
                       // Rotation transitions from 10 to a upright slight tilt of 15
                       targetRot = 10 + (scrollState.progress2 * 5);
                   } else {
-                      // Mobile scale transitions from 0.75 down to 0.35
-                      targetScale = 0.75 - (scrollState.progress2 * 0.4);
+                      // Mobile scale transitions from mobileScaleBase down to active card scale
+                      const endScale = window.innerWidth < 480 ? 0.3 : 0.35;
+                      targetScale = mobileScaleBase - (scrollState.progress2 * (mobileScaleBase - endScale));
                       targetRot = 15;
                   }
               } else {
@@ -1900,8 +2045,8 @@
                       // Rotation transitions from 25 to 10
                       targetRot = 25 - (scrollState.progress1 * 15);
                   } else {
-                      // Keep mobile scale same at 0.75 (no reduction)
-                      targetScale = 0.75;
+                      // Keep mobile scale same at mobileScaleBase
+                      targetScale = mobileScaleBase;
                       // Rotation transitions from 25 to 15
                       targetRot = 25 - (scrollState.progress1 * 10);
                   }
@@ -1910,7 +2055,7 @@
               // Fallback if introSpace is not found
               targetX = window.innerWidth / 2;
               targetY = window.innerHeight / 2;
-              targetScale = isDesktop ? 1.0 : 0.75;
+              targetScale = isDesktop ? 1.0 : (window.innerWidth < 480 ? 0.58 : 0.75);
               targetRot = 25;
           }
 
