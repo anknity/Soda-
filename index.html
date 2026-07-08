@@ -807,6 +807,129 @@
           to { transform: translateX(200%) rotate(45deg); }
       }
 
+      /* Base Mobile Menu Hide Styles (Desktop First) */
+      .mobile-menu-toggle {
+          display: none;
+          flex-direction: column;
+          justify-content: space-between;
+          width: 30px;
+          height: 19px;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          padding: 0;
+          z-index: 1010;
+          outline: none;
+      }
+
+      .mobile-menu-toggle .bar {
+          width: 100%;
+          height: 3px;
+          background-color: white;
+          border-radius: 4px;
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+          transform-origin: left center;
+      }
+
+      .mobile-menu-toggle.open .bar:nth-child(1) {
+          transform: rotate(45deg) translate(2px, -1px);
+          background-color: var(--active-border);
+      }
+
+      .mobile-menu-toggle.open .bar:nth-child(2) {
+          opacity: 0;
+          transform: scaleX(0);
+      }
+
+      .mobile-menu-toggle.open .bar:nth-child(3) {
+          transform: rotate(-45deg) translate(1px, 2px);
+          background-color: var(--active-border);
+      }
+
+      .mobile-menu-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100vh;
+          background: rgba(1, 10, 8, 0.96);
+          backdrop-filter: blur(25px);
+          -webkit-backdrop-filter: blur(25px);
+          z-index: 1005;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.4s ease, visibility 0.4s ease;
+      }
+
+      body.blue-theme .mobile-menu-overlay {
+          background: rgba(1, 6, 10, 0.96);
+      }
+      body.cherry-theme .mobile-menu-overlay {
+          background: rgba(10, 3, 0, 0.96);
+      }
+      body.citrus-theme .mobile-menu-overlay {
+          background: rgba(10, 0, 2, 0.96);
+      }
+
+      .mobile-menu-overlay.open {
+          opacity: 1;
+          visibility: visible;
+      }
+
+      .mobile-menu-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2rem;
+          width: 80%;
+          max-width: 400px;
+          text-align: center;
+      }
+
+      .mobile-nav-item {
+          font-family: var(--font-sans);
+          font-size: 2rem;
+          font-weight: 700;
+          color: rgba(255, 255, 255, 0.7);
+          text-decoration: none;
+          transition: all 0.3s ease;
+          width: 100%;
+          padding: 0.5rem 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .mobile-nav-item:hover,
+      .mobile-nav-item.active {
+          color: var(--active-border);
+          transform: scale(1.05);
+      }
+
+      .mobile-contact-btn {
+          background: var(--active-border);
+          color: #011d17;
+          border: none;
+          padding: 1rem 3rem;
+          border-radius: 100px;
+          font-weight: 700;
+          font-size: 1.1rem;
+          cursor: pointer;
+          margin-top: 1rem;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+          transition: all 0.3s ease;
+      }
+
+      .mobile-contact-btn:hover {
+          background: white;
+          transform: translateY(-2px);
+      }
+
+      body.menu-open {
+          overflow: hidden !important;
+      }
+
       @media (max-width: 1200px) {
           .main-product-3d { width: 95vw; height: 65vh; }
           .hero-content { flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 6rem; gap: 2rem; height: auto; }
@@ -879,7 +1002,7 @@
 
       /* Detailed Mobile Responsiveness Enhancements */
       @media (max-width: 768px) {
-          /* Header adjustments with floating bottom navbar */
+          /* Header adjustments with Hamburger Menu */
           .header {
               padding: 1rem 5%;
               background: rgba(10, 10, 10, 0.4);
@@ -888,41 +1011,119 @@
               border-bottom: 1px solid rgba(255, 255, 255, 0.05);
           }
           .logo {
-              font-size: 1.2rem;
+              font-size: 1.3rem;
           }
           .contact-btn {
-              padding: 0.6rem 1.2rem;
-              font-size: 0.8rem;
+              display: none !important; /* Hide desktop contact us */
           }
           .nav {
-              position: fixed;
-              bottom: 1.5rem;
-              left: 50%;
-              transform: translateX(-50%);
-              z-index: 1000;
-              background: rgba(10, 10, 10, 0.85);
-              backdrop-filter: blur(20px);
-              -webkit-backdrop-filter: blur(20px);
-              border: 1px solid rgba(255, 255, 255, 0.15);
-              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-              width: 90%;
-              max-width: 380px;
-              justify-content: space-around;
-              padding: 0.35rem;
+              display: none !important; /* Hide desktop nav bar completely */
           }
-          .nav-item {
-              padding: 0.4rem 0.8rem;
-              font-size: 0.75rem;
+          .mobile-menu-toggle {
+              display: flex; /* Show hamburger button */
           }
+
+          /* Compact and Punchy Mobile Hero Layout */
+          .hero {
+              height: auto;
+              min-height: 100vh;
+              padding: 5.5rem 6% 3rem 6%;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: flex-start;
+          }
+          .hero-content {
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              width: 100%;
+              height: auto;
+              gap: 0;
+          }
+          .hero-left {
+              padding: 1.5rem 0 0 0;
+              margin: 0;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              width: 100%;
+              z-index: 2;
+          }
+          .main-title {
+              font-size: clamp(2.8rem, 11vw, 4.2rem) !important;
+              line-height: 0.95 !important;
+              margin-bottom: 0.5rem !important;
+              text-align: center !important;
+              white-space: normal !important; /* Allow title word wrapping */
+              align-self: center !important;
+          }
+          
+          /* Absolute Center Spacer for 3D Can on mobile */
+          .hero-center {
+              position: absolute !important;
+              top: 318px !important; /* Move down ~20% more to place perfectly in the gap between title and description */
+              left: 50% !important;
+              transform: translate(-50%, -50%) !important;
+              width: 100% !important;
+              height: 250px !important;
+              z-index: 10;
+              order: unset !important;
+              margin: 0 !important;
+          }
+
+          /* Large margin-top creates a perfect blank gap for the 3D can */
+          .description {
+              margin-top: 250px !important; /* Matches .hero-center height to create gap */
+              font-size: 1rem !important;
+              line-height: 1.5 !important;
+              max-width: 92% !important;
+              margin-bottom: 1.5rem !important;
+              text-align: center !important;
+              color: rgba(255, 255, 255, 0.8) !important;
+          }
+
+          .cta-group {
+              width: 100%;
+              display: flex;
+              justify-content: center;
+              margin-bottom: 1.5rem;
+          }
+
           .award-badge {
               justify-content: center;
-              margin-top: 1.5rem;
+              margin-top: 1rem;
+              margin-bottom: 2rem;
+              width: 100%;
+          }
+
+          /* Flavor carousel below CTA flow */
+          .hero-right {
+              align-items: center;
+              text-align: center;
+              width: 100%;
+              padding: 2rem 0;
+              z-index: 100;
+              pointer-events: auto;
+          }
+          .product-carousel {
+              align-items: center;
+              display: flex;
+              flex-direction: column;
+          }
+          .side-title {
+              font-size: 2.2rem !important;
+              text-align: center !important;
+              align-self: center !important;
+              margin-top: 1rem;
+              white-space: normal !important;
           }
 
           /* Intro Section Spacing */
           .intro-left-space {
-              height: 280px !important;
-              min-height: 280px !important;
+              height: 250px !important;
+              min-height: 250px !important;
           }
 
           /* Scale down floaty berries to prevent UI clutter on mobile */
@@ -977,15 +1178,15 @@
               transform: translateX(-50%) scale(0.8) translateY(20px);
           }
 
-          /* Adjust headings on mobile to prevent clipping/overlapping of long words */
-          .main-title, .side-title {
-              font-size: 2.8rem;
+          /* Adjust side titles on mobile to prevent clipping/overlapping */
+          .side-title {
+              font-size: 1.9rem !important;
           }
       }
 
       @media (max-width: 480px) {
-          .main-title, .side-title {
-              font-size: 2.4rem;
+          .side-title {
+              font-size: 1.6rem !important;
           }
           .feature-card {
               padding: 1rem;
@@ -995,7 +1196,7 @@
               font-size: 1.5rem;
           }
           .intro-title {
-              font-size: 2.2rem;
+              font-size: 1.8rem !important;
           }
           .newsletter-form {
               flex-direction: column;
@@ -1012,8 +1213,8 @@
       }
 
       @media (max-width: 380px) {
-          .main-title, .side-title {
-              font-size: 2.1rem;
+          .side-title {
+              font-size: 1.4rem !important;
           }
       }
 
@@ -1260,7 +1461,23 @@
             <a href="#" class="nav-item">Reviews</a>
         </nav>
         <button class="contact-btn">Contact Us</button>
+        <button class="mobile-menu-toggle" aria-label="Toggle Menu" id="mobile-menu-toggle">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
     </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay">
+        <div class="mobile-menu-container">
+            <a href="#" class="mobile-nav-item active">Home</a>
+            <a href="#ingredients-section" class="mobile-nav-item">Ingredients</a>
+            <a href="#products-section" class="mobile-nav-item">Products</a>
+            <a href="#" class="mobile-nav-item">Reviews</a>
+            <button class="mobile-contact-btn">Contact Us</button>
+        </div>
+    </div>
 
     <main class="hero">
         <div class="hero-content">
@@ -1546,6 +1763,50 @@
       // Register GSAP ScrollTrigger plugin
       gsap.registerPlugin(ScrollTrigger);
 
+      // Mobile Menu Interactivity Logic
+      const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+      const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+      const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+
+      if (mobileMenuToggle && mobileMenuOverlay) {
+          mobileMenuToggle.addEventListener('click', () => {
+              const isOpen = mobileMenuToggle.classList.toggle('open');
+              mobileMenuOverlay.classList.toggle('open', isOpen);
+              document.body.classList.toggle('menu-open', isOpen);
+
+              if (isOpen) {
+                  // Beautiful staggered slide-up and fade-in for mobile menu elements
+                  gsap.fromTo('.mobile-nav-item', 
+                      { opacity: 0, y: 30 },
+                      { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: "power2.out", delay: 0.1 }
+                  );
+                  gsap.fromTo('.mobile-contact-btn',
+                      { opacity: 0, y: 30 },
+                      { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", delay: 0.4 }
+                  );
+              }
+          });
+
+          // Close mobile menu when clicking any nav item
+          mobileNavItems.forEach(item => {
+              item.addEventListener('click', () => {
+                  mobileMenuToggle.classList.remove('open');
+                  mobileMenuOverlay.classList.remove('open');
+                  document.body.classList.remove('menu-open');
+              });
+          });
+
+          // Close mobile menu when clicking the contact button
+          const mobileContactBtn = document.querySelector('.mobile-contact-btn');
+          if (mobileContactBtn) {
+              mobileContactBtn.addEventListener('click', () => {
+                  mobileMenuToggle.classList.remove('open');
+                  mobileMenuOverlay.classList.remove('open');
+                  document.body.classList.remove('menu-open');
+              });
+          }
+      }
+
       const modelViewer = document.querySelector('#product-model');
       const berriesFG = document.querySelector('.berries-container');
       const berriesBG = document.querySelector('.berries-container-bg');
@@ -1610,14 +1871,12 @@
           start: "top 50%",
           end: "bottom 50%",
           onEnter: () => {
-              document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-              const item = Array.from(document.querySelectorAll('.nav-item')).find(el => el.getAttribute('href') === '#ingredients-section');
-              if (item) item.classList.add('active');
+              document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(el => el.classList.remove('active'));
+              document.querySelectorAll('.nav-item[href="#ingredients-section"], .mobile-nav-item[href="#ingredients-section"]').forEach(el => el.classList.add('active'));
           },
           onLeaveBack: () => {
-              document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-              const item = Array.from(document.querySelectorAll('.nav-item')).find(el => el.getAttribute('href') === '#');
-              if (item) item.classList.add('active');
+              document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(el => el.classList.remove('active'));
+              document.querySelectorAll('.nav-item[href="#"], .mobile-nav-item[href="#"]').forEach(el => el.classList.add('active'));
           }
       });
 
@@ -1626,14 +1885,12 @@
           start: "top 50%",
           end: "bottom 50%",
           onEnter: () => {
-              document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-              const item = Array.from(document.querySelectorAll('.nav-item')).find(el => el.getAttribute('href') === '#products-section');
-              if (item) item.classList.add('active');
+              document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(el => el.classList.remove('active'));
+              document.querySelectorAll('.nav-item[href="#products-section"], .mobile-nav-item[href="#products-section"]').forEach(el => el.classList.add('active'));
           },
           onLeaveBack: () => {
-              document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-              const item = Array.from(document.querySelectorAll('.nav-item')).find(el => el.getAttribute('href') === '#ingredients-section');
-              if (item) item.classList.add('active');
+              document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(el => el.classList.remove('active'));
+              document.querySelectorAll('.nav-item[href="#ingredients-section"], .mobile-nav-item[href="#ingredients-section"]').forEach(el => el.classList.add('active'));
           }
       });
 
