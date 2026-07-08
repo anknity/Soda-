@@ -121,7 +121,7 @@
           position: fixed;
           top: 0;
           width: 100%;
-          z-index: 100;
+          z-index: 1000;
       }
 
       .logo {
@@ -1458,7 +1458,6 @@
             <a href="#" class="nav-item active">Home</a>
             <a href="#ingredients-section" class="nav-item">Ingredients</a>
             <a href="#products-section" class="nav-item">Products</a>
-            <a href="#" class="nav-item">Reviews</a>
         </nav>
         <button class="contact-btn">Contact Us</button>
         <button class="mobile-menu-toggle" aria-label="Toggle Menu" id="mobile-menu-toggle">
@@ -1474,7 +1473,6 @@
             <a href="#" class="mobile-nav-item active">Home</a>
             <a href="#ingredients-section" class="mobile-nav-item">Ingredients</a>
             <a href="#products-section" class="mobile-nav-item">Products</a>
-            <a href="#" class="mobile-nav-item">Reviews</a>
             <button class="mobile-contact-btn">Contact Us</button>
         </div>
     </div>
@@ -1715,8 +1713,7 @@
                 <div class="footer-links">
                     <a href="#">Home</a>
                     <a href="#ingredients-section">Ingredients</a>
-                    <a href="#products-section">Flavors</a>
-                    <a href="#">Taste Profile</a>
+                    <a href="#products-section">Products</a>
                 </div>
             </div>
             
@@ -1795,17 +1792,47 @@
                   document.body.classList.remove('menu-open');
               });
           });
+      }
 
-          // Close mobile menu when clicking the contact button
-          const mobileContactBtn = document.querySelector('.mobile-contact-btn');
-          if (mobileContactBtn) {
-              mobileContactBtn.addEventListener('click', () => {
+      // Smooth scrolling for navigation links and contact buttons
+      document.querySelectorAll('a[href^="#"], .contact-btn, .mobile-contact-btn').forEach(trigger => {
+          trigger.addEventListener('click', function (e) {
+              e.preventDefault();
+              
+              // Close mobile menu if open
+              if (mobileMenuToggle && mobileMenuOverlay) {
                   mobileMenuToggle.classList.remove('open');
                   mobileMenuOverlay.classList.remove('open');
                   document.body.classList.remove('menu-open');
-              });
-          }
-      }
+              }
+              
+              let targetElement = null;
+              let headerOffset = 80;
+
+              if (this.classList.contains('contact-btn') || this.classList.contains('mobile-contact-btn')) {
+                  targetElement = document.querySelector('footer');
+                  headerOffset = 0; // scroll fully to footer
+              } else {
+                  const targetId = this.getAttribute('href');
+                  if (targetId === '#' || targetId === '') {
+                      targetElement = document.body;
+                      headerOffset = 0;
+                  } else {
+                      targetElement = document.querySelector(targetId);
+                  }
+              }
+
+              if (targetElement) {
+                  const elementPosition = targetElement.getBoundingClientRect().top + window.scrollY;
+                  const offsetPosition = elementPosition - headerOffset;
+                  
+                  window.scrollTo({
+                      top: offsetPosition,
+                      behavior: 'smooth'
+                  });
+              }
+          });
+      });
 
       const modelViewer = document.querySelector('#product-model');
       const berriesFG = document.querySelector('.berries-container');
@@ -2227,38 +2254,44 @@
           // Bobbing float calculation (adds life to the can)
           const floatOffset = Math.sin(time * 1.5) * 12; // 12px float range
 
+          // Get current scroll positions for absolute document calculations
+          const scrollX = window.scrollX;
+          const scrollY = window.scrollY;
+
           if (introSpace) {
               const rect = introSpace.getBoundingClientRect();
               
-              // Viewport coordinates of introSpace center
-              const introCenterX = rect.left + rect.width / 2;
-              const introCenterY = rect.top + rect.height / 2;
+              // Absolute coordinates of introSpace center
+              const introAbsX = rect.left + scrollX + rect.width / 2;
+              const introAbsY = rect.top + scrollY + rect.height / 2;
               
-              // Viewport coordinates of hero center (targets .hero-center spacer dynamically on mobile)
+              // Absolute coordinates of hero center (targets .hero-center spacer dynamically on mobile)
               const heroCenterSpace = document.querySelector('.hero-center');
-              let heroCenterX = window.innerWidth / 2;
-              let heroCenterY = window.innerHeight / 2;
+              let heroAbsX = scrollX + window.innerWidth / 2;
+              let heroAbsY = scrollY + window.innerHeight / 2;
               if (heroCenterSpace) {
                   const hRect = heroCenterSpace.getBoundingClientRect();
-                  heroCenterX = hRect.left + hRect.width / 2;
-                  heroCenterY = hRect.top + hRect.height / 2;
+                  heroAbsX = hRect.left + scrollX + hRect.width / 2;
+                  heroAbsY = hRect.top + scrollY + hRect.height / 2;
               }
               
               const mobileScaleBase = window.innerWidth < 480 ? 0.58 : 0.75;
               
+              let targetAbsX, targetAbsY;
+
               if (scrollState.progress3 > 0 && footerSpace && activeProductCard) {
                   // Scroll is moving from Products Section to Footer
                   const cardRect = activeProductCard.getBoundingClientRect();
-                  const cardCenterX = cardRect.left + cardRect.width / 2;
-                  const cardCenterY = cardRect.top + cardRect.height / 2;
+                  const cardAbsX = cardRect.left + scrollX + cardRect.width / 2;
+                  const cardAbsY = cardRect.top + scrollY + cardRect.height / 2;
 
                   const footerRect = footerSpace.getBoundingClientRect();
-                  const footerCenterX = footerRect.left + footerRect.width / 2;
-                  const footerCenterY = footerRect.top + footerRect.height / 2;
+                  const footerAbsX = footerRect.left + scrollX + footerRect.width / 2;
+                  const footerAbsY = footerRect.top + scrollY + footerRect.height / 2;
 
-                  // Interpolate from active card center to footer center
-                  targetX = cardCenterX + (footerCenterX - cardCenterX) * scrollState.progress3;
-                  targetY = cardCenterY + (footerCenterY - cardCenterY) * scrollState.progress3;
+                  // Interpolate absolute coordinates
+                  targetAbsX = cardAbsX + (footerAbsX - cardAbsX) * scrollState.progress3;
+                  targetAbsY = cardAbsY + (footerAbsY - cardAbsY) * scrollState.progress3;
 
                   // Scale transitions from active card scale to footer scale
                   const startScale = isDesktop ? 0.45 : (window.innerWidth < 480 ? 0.3 : 0.35);
@@ -2272,12 +2305,12 @@
               } else if (scrollState.progress2 > 0 && activeProductCard) {
                   // Scroll is moving from Ingredients to Products Section
                   const cardRect = activeProductCard.getBoundingClientRect();
-                  const cardCenterX = cardRect.left + cardRect.width / 2;
-                  const cardCenterY = cardRect.top + cardRect.height / 2;
+                  const cardAbsX = cardRect.left + scrollX + cardRect.width / 2;
+                  const cardAbsY = cardRect.top + scrollY + cardRect.height / 2;
 
-                  // Interpolate between ingredients center and active product card center
-                  targetX = introCenterX + (cardCenterX - introCenterX) * scrollState.progress2;
-                  targetY = introCenterY + (cardCenterY - introCenterY) * scrollState.progress2;
+                  // Interpolate absolute coordinates
+                  targetAbsX = introAbsX + (cardAbsX - introAbsX) * scrollState.progress2;
+                  targetAbsY = introAbsY + (cardAbsY - introAbsY) * scrollState.progress2;
 
                   if (isDesktop) {
                       // Scale transitions from 1.0 (at ingredients) down to 0.45 inside the card
@@ -2292,9 +2325,9 @@
                   }
               } else {
                   // Scroll is moving from Hero to Ingredients Section
-                  // Interpolate between hero center and intro space center based on scrollState.progress1
-                  targetX = heroCenterX + (introCenterX - heroCenterX) * scrollState.progress1;
-                  targetY = heroCenterY + (introCenterY - heroCenterY) * scrollState.progress1;
+                  // Interpolate absolute coordinates
+                  targetAbsX = heroAbsX + (introAbsX - heroAbsX) * scrollState.progress1;
+                  targetAbsY = heroAbsY + (introAbsY - heroAbsY) * scrollState.progress1;
 
                   if (isDesktop) {
                       // Keep the scale same at 1.0 (no reduction)
@@ -2308,6 +2341,10 @@
                       targetRot = 25 - (scrollState.progress1 * 10);
                   }
               }
+
+              // Convert computed absolute coordinates back to relative viewport coordinates for styling
+              targetX = targetAbsX - scrollX;
+              targetY = targetAbsY - scrollY;
           } else {
               // Fallback if introSpace is not found
               targetX = window.innerWidth / 2;
